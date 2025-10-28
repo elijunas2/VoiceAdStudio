@@ -1,5 +1,5 @@
 
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { Header } from './components/Header';
 import { TtsControls } from './components/TtsControls';
 import { AudioPlayer } from './components/AudioPlayer';
@@ -9,15 +9,16 @@ import type { VoiceOptionId, LanguageOptionId, StyleId } from './types';
 import { STYLES } from './types';
 import { getAvailableStyles, getAvailableVoices, getAvailableLanguages } from './data/options';
 import { LoadingIcon } from './components/icons';
-import { useLanguage } from './contexts/LanguageContext';
+import { useLanguage, Language } from './contexts/LanguageContext';
+import { translations } from './lib/translations';
 
 const App: React.FC = () => {
-  const { t } = useLanguage();
+  const { language: uiLanguage, t } = useLanguage();
   
-  const [text, setText] = useState<string>('Welcome to VoiceAd Creator! Generate compelling voice-overs for your ads in seconds.');
+  const [text, setText] = useState<string>(t('defaultScriptText'));
   const [style, setStyle] = useState<StyleId>('friendly');
   const [voice, setVoice] = useState<VoiceOptionId>('Kore');
-  const [language, setLanguage] = useState<LanguageOptionId>('en-US');
+  const [ttsLanguage, setTtsLanguage] = useState<LanguageOptionId>('en-US');
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isPreviewLoading, setIsPreviewLoading] = useState<boolean>(false);
   const [audioB64, setAudioB64] = useState<string | null>(null);
@@ -26,6 +27,28 @@ const App: React.FC = () => {
   const availableStyles = useMemo(() => getAvailableStyles(t), [t]);
   const availableVoices = useMemo(() => getAvailableVoices(t), [t]);
   const availableLanguages = useMemo(() => getAvailableLanguages(t), [t]);
+  
+  useEffect(() => {
+    const langMap: { [key in Language]: LanguageOptionId } = {
+        en: 'en-US',
+        lt: 'lt-LT',
+        de: 'de-DE',
+        es: 'es-ES',
+        fr: 'fr-FR',
+    };
+    const newTtsLanguage = langMap[uiLanguage];
+    if (newTtsLanguage) {
+        setTtsLanguage(newTtsLanguage);
+    }
+  }, [uiLanguage]);
+
+  useEffect(() => {
+    const allDefaultTexts = Object.values(translations).map(lang => lang.defaultScriptText);
+    if (allDefaultTexts.includes(text)) {
+      setText(t('defaultScriptText'));
+    }
+  }, [t]);
+
 
   const handleGenerate = useCallback(async () => {
     if (!text.trim()) {
@@ -39,7 +62,7 @@ const App: React.FC = () => {
     try {
       const stylePrompt = STYLES[style];
       const fullPrompt = stylePrompt ? `${stylePrompt}: ${text}` : text;
-      const audioData = await generateSpeech(fullPrompt, voice, language);
+      const audioData = await generateSpeech(fullPrompt, voice, ttsLanguage);
       setAudioB64(audioData);
     } catch (err) {
       console.error(err);
@@ -47,7 +70,7 @@ const App: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [text, style, voice, language, t]);
+  }, [text, style, voice, ttsLanguage, t]);
   
   const handleDownload = useCallback(() => {
     if (!audioB64) return;
@@ -75,7 +98,7 @@ const App: React.FC = () => {
 
     try {
       const sampleText = t('previewText');
-      const audioData = await generateSpeech(sampleText, voice, language);
+      const audioData = await generateSpeech(sampleText, voice, ttsLanguage);
       const blob = createWavBlob(audioData);
       const url = URL.createObjectURL(blob);
       const audio = new Audio(url);
@@ -89,7 +112,7 @@ const App: React.FC = () => {
     } finally {
       setIsPreviewLoading(false);
     }
-  }, [voice, language, isPreviewLoading, t]);
+  }, [voice, ttsLanguage, isPreviewLoading, t]);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-black via-gray-900 to-black font-sans p-4 sm:p-6 lg:p-8 selection:bg-blue-500 selection:text-white">
@@ -106,8 +129,8 @@ const App: React.FC = () => {
                 setStyle={setStyle}
                 voice={voice}
                 setVoice={setVoice}
-                language={language}
-                setLanguage={setLanguage}
+                ttsLanguage={ttsLanguage}
+                setTtsLanguage={setTtsLanguage}
                 availableStyles={availableStyles}
                 availableVoices={availableVoices}
                 availableLanguages={availableLanguages}

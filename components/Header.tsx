@@ -16,8 +16,16 @@ export const Header: React.FC = () => {
         <div className="inline-flex items-center justify-center bg-gray-800/50 border border-gray-700/50 rounded-full p-3 mb-4">
           <MicIcon className="h-6 w-6 text-gray-300" />
         </div>
-        <h1 className="text-4xl sm:text-5xl font-bold tracking-tight text-gray-100">
-          {t('headerTitle')}
+        <h1 className="text-4xl sm:text-5xl font-bold tracking-tight text-gray-100 flex justify-center flex-wrap">
+          {t('headerTitle').split('').map((char, index) => (
+            <span
+              key={index}
+              className="inline-block animate-float bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent"
+              style={{ animationDelay: `${index * 0.1}s` }}
+            >
+              {char === ' ' ? '\u00A0' : char}
+            </span>
+          ))}
         </h1>
         <p className="mt-4 max-w-2xl mx-auto text-lg text-gray-400">
           {t('headerDescription')}

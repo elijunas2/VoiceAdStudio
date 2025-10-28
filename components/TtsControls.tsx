@@ -1,6 +1,6 @@
 
 import React from 'react';
-import type { VoiceOptionId, LanguageOptionId, StyleId, LabeledOption } from '../types';
+import type { VoiceOptionId, LanguageOptionId, StyleId, LabeledOption, LabeledOptionGroup } from '../types';
 import { PlayIcon, LoadingIcon, SpeakerIcon } from './icons';
 import { useLanguage } from '../contexts/LanguageContext';
 
@@ -11,10 +11,10 @@ interface TtsControlsProps {
   setStyle: (style: StyleId) => void;
   voice: VoiceOptionId;
   setVoice: (voice: VoiceOptionId) => void;
-  language: LanguageOptionId;
-  setLanguage: (language: LanguageOptionId) => void;
+  ttsLanguage: LanguageOptionId;
+  setTtsLanguage: (language: LanguageOptionId) => void;
   availableStyles: LabeledOption<StyleId>[];
-  availableVoices: LabeledOption<VoiceOptionId>[];
+  availableVoices: LabeledOptionGroup<VoiceOptionId>[];
   availableLanguages: LabeledOption<LanguageOptionId>[];
   onSubmit: () => void;
   isLoading: boolean;
@@ -29,8 +29,8 @@ export const TtsControls: React.FC<TtsControlsProps> = ({
   setStyle,
   voice,
   setVoice,
-  language,
-  setLanguage,
+  ttsLanguage,
+  setTtsLanguage,
   availableStyles,
   availableVoices,
   availableLanguages,
@@ -100,8 +100,8 @@ export const TtsControls: React.FC<TtsControlsProps> = ({
         <select
           id="language"
           className={`${inputBaseClasses} appearance-none`}
-          value={language}
-          onChange={(e) => setLanguage(e.target.value as LanguageOptionId)}
+          value={ttsLanguage}
+          onChange={(e) => setTtsLanguage(e.target.value as LanguageOptionId)}
           style={customSelectStyle}
         >
           {availableLanguages.map((lang) => (
@@ -124,10 +124,14 @@ export const TtsControls: React.FC<TtsControlsProps> = ({
             onChange={(e) => setVoice(e.target.value as VoiceOptionId)}
             style={customSelectStyle}
           >
-            {availableVoices.map((v) => (
-              <option key={v.id} value={v.id} className="bg-gray-800">
-                {v.name}
-              </option>
+            {availableVoices.map((group) => (
+              <optgroup key={group.label} label={group.label} className="bg-gray-900 text-gray-400 font-semibold">
+                {group.options.map((v) => (
+                  <option key={v.id} value={v.id} className="bg-gray-800 text-gray-200 font-normal">
+                    {v.name}
+                  </option>
+                ))}
+              </optgroup>
             ))}
           </select>
           <button
