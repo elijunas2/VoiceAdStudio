@@ -1,0 +1,5 @@
+{
+  "name": "VoiceAd Creator",
+  "description": "A mini SaaS platform to convert text into professional, multi-lingual advertising voice-overs using AI. Enter your script, choose a voice and style, and generate high-quality audio for your ads.",
+  "requestFramePermissions": []
+}
